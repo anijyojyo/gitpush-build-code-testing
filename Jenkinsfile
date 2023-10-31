@@ -88,7 +88,7 @@ environment {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    def dockerImageName = "dsocouncil/node-service:${env.GIT_COMMIT}"
+                    def dockerImageName = "anijyo/node-service:${env.GIT_COMMIT}"
 
                     withDockerRegistry(credentialsId: "anijyo", url: "https://hub.docker.com/") {
                         sh "docker build -t ${dockerImageName} ."
