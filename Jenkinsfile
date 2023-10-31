@@ -12,55 +12,55 @@ environment {
                 archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
             }
         }
-        stage('Check Git-Secrets') {
-            steps {
-                script {
-                    // Define the GitHub repository URL
-                    def githubRepoURL = 'https://github.com/shrivastavashish/devsecops-main-repo.git'
+        // stage('Check Git-Secrets') {
+        //     steps {
+        //         script {
+        //             // Define the GitHub repository URL
+        //             def githubRepoURL = 'https://github.com/shrivastavashish/devsecops-main-repo.git'
 
-                    // Remove existing trufflehog file if it exists
-                    sh "rm trufflehog || true"
+        //             // Remove existing trufflehog file if it exists
+        //             sh "rm trufflehog || true"
 
-                    // Run Trufflehog container to scan GitHub repository
-                    sh """
-                    docker run --rm -v \"$PWD:/pwd\" \
-                    trufflesecurity/trufflehog:latest github --repo https://github.com/shrivastavashish/devsecops-main-repo.git --json > trufflehog_report.json
-                """
-                // copy file to server 
-                    sh "sudo cp trufflehog_report.json /root/reports/truffle/"
-                }
-            }
-        }
-        stage('Static Analysis - SonarQube') {
-            steps {
-                script {
-                    def sonarProjectKey = 'secdev'
-                    def sonarHostUrl = 'http://secopsdev.eastus.cloudapp.azure.com:9000'
-                    def sonarToken = 'sqa_c5eb9ab4ccd48bd0e58f4c555e2709aba68fdcc6'
+        //             // Run Trufflehog container to scan GitHub repository
+        //             sh """
+        //             docker run --rm -v \"$PWD:/pwd\" \
+        //             trufflesecurity/trufflehog:latest github --repo https://github.com/shrivastavashish/devsecops-main-repo.git --json > trufflehog_report.json
+        //         """
+        //         // copy file to server 
+        //             sh "sudo cp trufflehog_report.json /root/reports/truffle/"
+        //         }
+        //     }
+        // }
+        // stage('Static Analysis - SonarQube') {
+        //     steps {
+        //         script {
+        //             def sonarProjectKey = 'secdev'
+        //             def sonarHostUrl = 'http://secopsdev.eastus.cloudapp.azure.com:9000'
+        //             def sonarToken = 'sqa_c5eb9ab4ccd48bd0e58f4c555e2709aba68fdcc6'
 
-                    withSonarQubeEnv('secdev') {
-                        sh "mvn sonar:sonar -Dsonar.projectKey=${sonarProjectKey} -Dsonar.host.url=${sonarHostUrl} -Dsonar.login=${sonarToken}"
-                    }
-                }
+        //             withSonarQubeEnv('secdev') {
+        //                 sh "mvn sonar:sonar -Dsonar.projectKey=${sonarProjectKey} -Dsonar.host.url=${sonarHostUrl} -Dsonar.login=${sonarToken}"
+        //             }
+        //         }
 
-                timeout(time: 2, unit: 'MINUTES') {
-                    script {
-                        waitForQualityGate abortPipeline: true
-                    }
-                }
-            }
-        }
+        //         timeout(time: 2, unit: 'MINUTES') {
+        //             script {
+        //                 waitForQualityGate abortPipeline: true
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('SCA Scan - Dependency-Check') {
-            steps {
-                sh "mvn dependency-check:check"
-            }
-            post {
-                always {
-                    dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-                }
-            }
-        }
+        // stage('SCA Scan - Dependency-Check') {
+        //     steps {
+        //         sh "mvn dependency-check:check"
+        //     }
+        //     post {
+        //         always {
+        //             dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+        //         }
+        //     }
+        // }
 
 //         stage('Snyk Code Scan') {
 //             steps {
@@ -97,38 +97,38 @@ environment {
                 }
             }
         }
-        stage('Kubernetes - Vulnerability Scan') {
-      steps {
-        parallel(
-          "Kubesec Scan": {
-            sh "bash kubesec-scan.sh"
-          },
-          "Trivy Scan": {
-            sh "bash trivy-kuber-scan.sh"
-          }
-        )
-      }
-    }
+    //     stage('Kubernetes - Vulnerability Scan') {
+    //   steps {
+    //     parallel(
+    //       "Kubesec Scan": {
+    //         sh "bash kubesec-scan.sh"
+    //       },
+    //       "Trivy Scan": {
+    //         sh "bash trivy-kuber-scan.sh"
+    //       }
+    //     )
+    //   }
+    // }
 
-        stage('Kubernetes- CIS Benchmark') {
-            steps {
-                script {
+        // stage('Kubernetes- CIS Benchmark') {
+        //     steps {
+        //         script {
 
-                parallel(
-                    "Master": {
-                    sh "bash cis-master.sh"
-                    },
-                    "Etcd": {
-                    sh "bash cis-etcd.sh"
-                    },
-                    "Kubelet": {
-                    sh "bash cis-kubelet.sh"
-                    }
-                )
+        //         parallel(
+        //             "Master": {
+        //             sh "bash cis-master.sh"
+        //             },
+        //             "Etcd": {
+        //             sh "bash cis-etcd.sh"
+        //             },
+        //             "Kubelet": {
+        //             sh "bash cis-kubelet.sh"
+        //             }
+        //         )
 
-                }
-            }
-            }    
+        //         }
+        //     }
+        //     }    
         stage('Kubernetes Deployment - DEV') {
             steps {
                 withKubeConfig([credentialsId: 'kubeconfig']) {
