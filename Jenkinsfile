@@ -90,7 +90,7 @@ environment {
                 script {
                     def dockerImageName = "dsocouncil/node-service:${env.GIT_COMMIT}"
 
-                    withDockerRegistry(credentialsId: "anijyo", url: "https://hub.docker.com/") {
+                    withDockerRegistry(credentialsId: "errnrrv", url: "https://index.docker.io/v1/") {
                         sh "docker build -t ${dockerImageName} ."
                         sh "docker push ${dockerImageName}"
                     }
